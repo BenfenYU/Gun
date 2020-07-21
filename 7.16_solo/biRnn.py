@@ -70,9 +70,9 @@ class birnn(torch.nn.Module):
 
         #biRnn
         if self.rnn_type == 'l':
-            self.binet = torch.nn.LSTM(input_size=self.input_emb_dim,
+            self.binet1 = torch.nn.LSTM(input_size=self.input_emb_dim,
                                        hidden_size=self.hidden_dim,
-                                       num_layers=8, bidirectional=True,
+                                       num_layers=1, bidirectional=True,
                                        batch_first=True)
             
         elif self.rnn_type == 'g':
