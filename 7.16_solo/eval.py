@@ -18,7 +18,7 @@ class eval_dev(object):
                                 drop_last=False, collate_fn=collate_fn_test)
 
         # 模型加载
-        model = torch.load('./not_ignored_model/model_birnn_200epoch.pth')
+        model = torch.load('./not_ignored_model/model_birnn_200epoch.pth',map_location=config.device)
 
         best_path_list = []
         pre_tag = []
@@ -64,7 +64,7 @@ class eval_dev(object):
         plt.scatter(x,pre_tag,c = 'blue', s = 3,marker='o',label = 'prediction of model')
         plt.legend()
         plt.title('Only bi-LSTM')
-        plt.save("Only bi-LSTM.png")
+        plt.savefig("Only bi-LSTM.png")
         plt.show()
 
         return
