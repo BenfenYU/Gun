@@ -18,7 +18,7 @@ class eval_dev(object):
                                 drop_last=False, collate_fn=collate_fn_test)
 
         # 模型加载
-        model = torch.load('./not_ignored_model/model_birnn_200epoch.pth',map_location=config.device)
+        model = torch.load('./not_ignored_model/model_birnn_800epoch.pth',map_location=config.device)
 
         best_path_list = []
         pre_tag = []
@@ -60,6 +60,8 @@ class eval_dev(object):
         print(accuracy_score(real_tags, pre_tag))
 
         plt.figure()
+        plt.xlabel('every word has a position')
+        plt.ylabel('id of tag')
         plt.scatter(x,real_tags,c = 'red',s = 3, marker='x',label = 'real semantic role')
         plt.scatter(x,pre_tag,c = 'blue', s = 3,marker='o',label = 'prediction of model')
         plt.legend()

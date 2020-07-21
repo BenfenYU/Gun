@@ -26,7 +26,6 @@ def train():
         sloss = []
         for words, pos, tags, seq_len in train_dataloader:
             pred_tags = model(words, pos, seq_len)
-            # print(len(pred_tags[1]))
             optimzer.zero_grad()
             loss = model.get_loss(pred_tags, tags)
 
