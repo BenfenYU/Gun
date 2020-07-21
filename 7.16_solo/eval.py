@@ -18,7 +18,7 @@ class eval_dev(object):
                                 drop_last=False, collate_fn=collate_fn_test)
 
         # 模型加载
-        model = torch.load('./model/model_200epoch.pth')
+        model = torch.load('./not_ignored_model/model_birnn_200epoch.pth')
 
         best_path_list = []
         pre_tag = []
