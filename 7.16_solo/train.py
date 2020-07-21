@@ -39,7 +39,7 @@ def train():
         
         scheduler.step()
 
-        writer.add_scalar('loss',sum(sloss)/len(train_data),global_step = epoch)
+        writer.add_scalar('loss',sum(sloss)/config.batch_size,global_step = epoch)
         if(epoch % config.save_freq == 0):
             torch.save(model, './not_ignored_model/model_{}_{}epoch.pth'.format(model.mname,epoch) )
 
