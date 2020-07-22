@@ -40,7 +40,7 @@ def train():
 
         writer.add_scalar('loss',sum(sloss)/config.batch_size,global_step = epoch)
         if(epoch % config.save_freq == 0):
-            torch.save(model, './not_ignored_model/model_{}_{}epoch.pth'.format(model.mname,epoch) )
+            torch.save(model, './not_ignored_model/packed_models/model_{}_{}epoch.pth'.format(model.mname,epoch) )
 
 
 if __name__ == '__main__':

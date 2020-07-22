@@ -38,7 +38,7 @@ class Config(object):
     lr = 2e-4
 
     # train params
-    epoch = 1000
+    epoch = 3001
     batch_size = 256
     num_works = 4 # 线程数
 
