@@ -70,9 +70,9 @@ class birnn(torch.nn.Module):
 
         #biRnn
         if self.rnn_type == 'l':
-            self.binet1 = torch.nn.LSTM(input_size=self.input_emb_dim,
+            self.binet = torch.nn.LSTM(input_size=self.input_emb_dim,
                                        hidden_size=self.hidden_dim,
-                                       num_layers=1, bidirectional=True,
+                                       num_layers=8, bidirectional=True,
                                        batch_first=True)
             
         elif self.rnn_type == 'g':
@@ -92,21 +92,23 @@ class birnn(torch.nn.Module):
         # [batch_size, seq_len, emb_dim]
         return torch.cat((word_embs, pos_embs), dim=2)
 
-    def forward(self, batch, pos, seq_len):
+    def forward(self, batch, pos, seq_len,pack_pad = True):
 
         '''正向传播，输出每句话预测标记,words,property,role'''
         word_embs = self.word_embbedding(batch)
         pos_embs = self.pos_embbedding(pos)
         embs = self.cat_emb(word_embs, pos_embs)
 
-        #pack_input = pack_padded_sequence(input=embs, lengths=seq_len,
-                                        #batch_first=True, enforce_sorted=False)
-        pack_output, _ = self.binet(embs)
-        #pad_packed_output, _ = pad_packed_sequence(pack_output, batch_first=True)
+        if(pack_pad):
 
-        #lrelu = self.lrelu(pack_output)
-        #lin = self.lin(lrelu)
-        scores = self.lin(pack_output)
+            pack_input = pack_padded_sequence(input=embs, lengths=seq_len,
+                                            batch_first=True, enforce_sorted=False)
+            pack_output, _ = self.binet(pack_input)
+            pad_packed_output, _ = pad_packed_sequence(pack_output, batch_first=True)
+            scores = self.lin(pad_packed_output)
+        else:
+            pack_output, _ = self.binet(embs)
+            scores = self.lin(pack_output)
 
         return scores  # [batch_size, seq_len, n_tag]
 

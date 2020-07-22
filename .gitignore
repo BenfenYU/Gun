@@ -1,5 +1,4 @@
 model
-runs
 *.pyc
 2020.7.16
 trained_models
