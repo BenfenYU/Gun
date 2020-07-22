@@ -6,11 +6,12 @@ from biRnn import *
 from dataset import *
 from utils import *
 
+device = torch.device('cuda:4' if torch.cuda.is_available() else 'cpu')
+
 def train():
     '''训练的同时，使用dev测试评价指标，最终用图可视化'''
     '''训练几个epoch就跑验证集测试model'''
-
-    model = init_net(birnn(rnn_type='l')).to(config.device)
+    model = init_net(birnn(rnn_type='l')).to(device)
     optimzer = torch.optim.Adam([{'params' : model.parameters() , 'initial_lr' : config.lr}], lr=config.lr)
     lambda1 = lambda epoch: 0.95 ** (epoch // 30)
     scheduler = LambdaLR(optimzer, lr_lambda=lambda1)

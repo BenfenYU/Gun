@@ -26,7 +26,7 @@ def train():
     writer = SummaryWriter()
 
     for epoch in range(1000):
-	epoch = opoch + 901
+        epoch = epoch + 901
         sloss = []
         for words, pos, tags, seq_len in train_dataloader:
             pred_tags = model(words, pos, seq_len)

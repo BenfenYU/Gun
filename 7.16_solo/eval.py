@@ -18,7 +18,9 @@ class eval_dev(object):
                                 drop_last=False, collate_fn=collate_fn_test)
 
         # 模型加载
-        model = torch.load('./model/no_pack_models/model_birnn_900epoch.pth',map_location=config.device)
+        
+        #model = torch.load('./model/no_pack_models/model_birnn_900epoch.pth',map_location=config.device)
+        model = torch.load( "model_birnn_1300epoch.pth",map_location=config.device)
 
         best_path_list = []
         pre_tag = []
@@ -47,14 +49,6 @@ class eval_dev(object):
         x = []
         for i in range(len(real_tags)):
             x.append(i)
-        '''
-            test[real_tags[i]] = test[real_tags[i]] + 1
-        alklk = sum(test)
-        test[0] = 1
-        for i in range(len(test)):
-            test[i] = alklk / test[i] /10000
-        print(test)
-        '''
                 
         print(f1_score(real_tags,pre_tag,average='micro'))
         print(accuracy_score(real_tags, pre_tag))
