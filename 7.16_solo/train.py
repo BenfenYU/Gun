@@ -5,6 +5,7 @@ from torch.optim.lr_scheduler import *
 from biRnn import *
 from dataset import *
 from utils import *
+import numpy as np
 
 def train():
     '''训练的同时，使用dev测试评价指标，最终用图可视化'''
@@ -41,6 +42,25 @@ def train():
         if(epoch % config.save_freq == 0):
             torch.save(model, './not_ignored_model/packed_models/model_{}_{}epoch.pth'.format(model.mname,epoch) )
 
+from utils import extend_maps, prepocess_data_for_lstmcrf
+from eval import bilstm_train_and_eval, ensemble_evaluate
+
+def train_birnncrf():
+    train_data = zip_dataset()
+    train_word_lists, train_tag_lists = [],[]
+    for lis in train_data:
+        train_word_lists.append(lis[0].split(' '))
+        train_tag_lists.append(lis[-1].split(' '))
+    train_word_lists, train_tag_lists = prepocess_data_for_lstmcrf(
+        train_word_lists, train_tag_lists
+    )
+    crf_word2id, crf_tag2id = config.word2id, config.tag2id
+    lstmcrf_pred = bilstm_train_and_eval(
+        (train_word_lists, train_tag_lists),
+        (train_word_lists, train_tag_lists),
+        (train_word_lists, train_tag_lists),
+        crf_word2id, crf_tag2id
+    )
 
 if __name__ == '__main__':
     train()

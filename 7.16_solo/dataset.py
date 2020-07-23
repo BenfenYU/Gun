@@ -65,23 +65,24 @@ def to_id_list2(words, w2id):
 '''
 '''因为返回的数据要组成batch，然后把batch输入已经训练好的词向量二维表，返回batch里面单词对应的词向量。注意，pytorch的Embedding只能输入word对应的index'''
 class MyDataset(Dataset):
-    def __init__(self, dataset):
+    def __init__(self, dataset,to_id = True):
         '''
         dataset：函数zip_dataset返回的dataset
         dataset的形状：一个list，每个元素是一个元组，一行words 以及对应的tags
         '''
         self.dataset = dataset
-        self.words, self.pos, self.tags = [], [], []
+        self.words, self.pos, self.tags, self.lengths = [], [], [],[]
         for line in dataset:
             ''' 把字符串line转换成list，然后用to_list()转换成tensor形式的对用id，当循环完成每个words'''
             self.words.append(to_id_list(line[0].split(' '), config.word2id))
             self.pos.append(to_id_list(line[1].split(' '), config.pos2id))
             self.tags.append(to_id_list(line[2].split(' '), config.tag2id))
+            self.lengths.append(len(self.words[-1]))
             # 把dataset转换成list形式的对应id序列
 
     # 返回数据集的一个样本：一行words以及对应的pos, tags。tensor形式
     def __getitem__(self, item):
-        return torch.tensor(self.words[item]),  torch.tensor(self.pos[item]), torch.tensor(self.tags[item])
+        return torch.tensor(self.words[item]),  torch.tensor(self.pos[item]), torch.tensor(self.tags[item]) ,torch.tensor(self.lengths[item])
 
     # 返回数据集的大小：有几行words
     def __len__(self):
