@@ -4,6 +4,7 @@ from dataset import *
 import numpy as np
 from sklearn.metrics import f1_score,precision_score,accuracy_score
 import matplotlib.pyplot as plt
+import os
 
 # 本类完成
 class eval_dev(object):
@@ -18,16 +19,12 @@ class eval_dev(object):
                                 drop_last=False, collate_fn=collate_fn_test)
 
         # 模型加载
-        
-        #model = torch.load('./model/no_pack_models/model_birnn_900epoch.pth',map_location=config.device)
-        model = torch.load( "model_birnn_1300epoch.pth",map_location=config.device)
+        model_path = "birnn_no_pack_1900epoch.pth"
+        model_name = os.path.splitext(model_path)[0]
+        model = torch.load( model_path,map_location=config.device)
 
         best_path_list = []
         pre_tag = []
-
-        test = []
-        for j in range(20):
-            test.append(0)
 
         with open(self.pred_path, 'w', encoding='utf-8') as f:
             for batch, pos, len_list in dataloader:
@@ -59,8 +56,8 @@ class eval_dev(object):
         plt.scatter(x,real_tags,c = 'red',s = 3, marker='x',label = 'real semantic role')
         plt.scatter(x,pre_tag,c = 'blue', s = 3,marker='o',label = 'prediction of model')
         plt.legend()
-        plt.title('Only bi-LSTM')
-        plt.savefig("Only bi-LSTM.png")
+        plt.title(model_name)
+        plt.savefig(model_name)
         plt.show()
 
         return
