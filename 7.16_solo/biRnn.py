@@ -66,6 +66,7 @@ class birnn(torch.nn.Module):
 
         #self.cri = torch.nn.CrossEntropyLoss(weight=config.weight)  # 返回标量
         self.cri = SmoothedCrossEntropyLoss()
+        self.dropout = torch.nn.Dropout(p = 0.4)
 
 
         # embedding
@@ -75,9 +76,9 @@ class birnn(torch.nn.Module):
         #biRnn
         if self.rnn_type == 'l':
             self.binet = torch.nn.LSTM(input_size=self.input_emb_dim,
-                                       hidden_size=self.hidden_dim,
-                                       num_layers=8, bidirectional=True,
-                                       batch_first=True)
+                                            hidden_size=self.hidden_dim,
+                                            num_layers=1, bidirectional=True,
+                                            batch_first=True)
             
         elif self.rnn_type == 'g':
             self.binet = torch.nn.GRU(input_size=self.input_emb_dim,
@@ -95,6 +96,16 @@ class birnn(torch.nn.Module):
     def cat_emb(self, word_embs, pos_embs):
         # [batch_size, seq_len, emb_dim]
         return torch.cat((word_embs, pos_embs), dim=2)
+    
+    def pack_b_pad(self,embs, seq_len,batch_first = True,enforce_sorted = False):
+        pack_input = pack_padded_sequence(input=embs, lengths=seq_len,
+                                        batch_first=batch_first, enforce_sorted=enforce_sorted)
+        pack_output, _ = self.binet(pack_input)
+        pad_packed_output, _ = pad_packed_sequence(pack_output, batch_first=True)
+        
+        out = self.dropout(pad_packed_output)
+
+        return out
 
     def forward(self, batch, pos, seq_len,pack_pad = True):
 
@@ -105,11 +116,13 @@ class birnn(torch.nn.Module):
 
         if(pack_pad):
 
+            ''' 
             pack_input = pack_padded_sequence(input=embs, lengths=seq_len,
                                             batch_first=True, enforce_sorted=False)
             pack_output, _ = self.binet(pack_input)
-            pad_packed_output, _ = pad_packed_sequence(pack_output, batch_first=True)
-            scores = self.lin(pad_packed_output)
+            pad_packed_output, _ = pad_packed_sequence(pack_output, batch_first=True)'''
+            b_d_out = self.pack_b_pad(embs,seq_len)
+            scores = self.lin(b_d_out)
         else:
             pack_output, _ = self.binet(embs)
             scores = self.lin(pack_output)

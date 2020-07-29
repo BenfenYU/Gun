@@ -41,15 +41,12 @@ class eval_dev(object):
         
         test_data = zip_dataset(False)
         tags = MyDataset(test_data).tags
-        real_tags = to1D(tags)
-        num_d = 0
-        x = []
-        for i in range(len(real_tags)):
-            x.append(i)
+        real_tags = to1D(tags)#flatten()
                 
         print(f1_score(real_tags,pre_tag,average='micro'))
         print(accuracy_score(real_tags, pre_tag))
 
+        x = [i for i in range(len(real_tags))]
         plt.figure()
         plt.xlabel('every word has a position')
         plt.ylabel('id of tag')

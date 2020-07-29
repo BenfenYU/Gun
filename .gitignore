@@ -3,3 +3,10 @@ model
 2020.7.16
 trained_models
 not_ignored_model
+pretrained_model
+output
+named_entity_recognition
+CV-TEST
+2020.7.29-s bert
+2020.7.8-CLV
+7.16_solo

@@ -1,14 +1,11 @@
 from itertools import zip_longest
 from copy import deepcopy
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
 from .util import tensorized, sort_by_lengths, cal_loss, cal_lstm_crf_loss
 from .config import TrainingConfig, LSTMConfig
-from .bilstm import BiLSTM
-
+from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
 class BILSTM_Model(object):
     def __init__(self, vocab_size, out_size, crf=True):
@@ -25,15 +22,9 @@ class BILSTM_Model(object):
         self.hidden_size = LSTMConfig.hidden_size
 
         self.crf = crf
-        # 根据是否添加crf初始化不同的模型 选择不一样的损失计算函数
-        if not crf:
-            self.model = BiLSTM(vocab_size, self.emb_size,
+        self.model = BiLSTM_CRF(vocab_size, self.emb_size,
                                 self.hidden_size, out_size).to(self.device)
-            self.cal_loss_func = cal_loss
-        else:
-            self.model = BiLSTM_CRF(vocab_size, self.emb_size,
-                                    self.hidden_size, out_size).to(self.device)
-            self.cal_loss_func = cal_lstm_crf_loss
+        self.cal_loss_func = cal_lstm_crf_loss
 
         # 加载训练参数：
         self.epoches = TrainingConfig.epoches
@@ -170,6 +161,33 @@ class BILSTM_Model(object):
 
         return pred_tag_lists, tag_lists
 
+class BiLSTM(nn.Module):
+    def __init__(self, vocab_size, emb_size, hidden_size, out_size):
+        super(BiLSTM, self).__init__()
+        self.embedding = nn.Embedding(vocab_size, emb_size)
+        self.bilstm = nn.LSTM(emb_size, hidden_size,
+                              batch_first=True,
+                              bidirectional=True)
+
+        self.lin = nn.Linear(2*hidden_size, out_size)
+
+    def forward(self, sents_tensor, lengths):
+        emb = self.embedding(sents_tensor)  # [B, L, emb_size]
+
+        packed = pack_padded_sequence(emb, lengths, batch_first=True)
+        rnn_out, _ = self.bilstm(packed)
+        # rnn_out:[B, L, hidden_size*2]
+        rnn_out, _ = pad_packed_sequence(rnn_out, batch_first=True)
+
+        scores = self.lin(rnn_out)  # [B, L, out_size]
+
+        return scores
+
+    def test(self, sents_tensor, lengths, _):
+        logits = self.forward(sents_tensor, lengths)  # [B, L, out_size]
+        _, batch_tagids = torch.max(logits, dim=2)
+
+        return batch_tagids
 
 class BiLSTM_CRF(nn.Module):
     def __init__(self, vocab_size, emb_size, hidden_size, out_size):

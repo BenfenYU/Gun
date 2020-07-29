@@ -7,7 +7,7 @@ from dataset import *
 from utils import *
 import numpy as np
 
-def train():
+def train_birnn():
     '''训练的同时，使用dev测试评价指标，最终用图可视化'''
     '''训练几个epoch就跑验证集测试model'''
     model = init_net(birnn(rnn_type='l')).to(config.device)
@@ -63,4 +63,4 @@ def train_birnncrf():
     )
 
 if __name__ == '__main__':
-    train()
+    train_birnncrf()
