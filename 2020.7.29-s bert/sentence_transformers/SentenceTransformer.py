@@ -20,6 +20,8 @@ from .evaluation import SentenceEvaluator
 from .util import import_from_string, batch_to_device, http_get
 from . import __version__
 
+from torch.utils.tensorboard import SummaryWriter
+
 class SentenceTransformer(nn.Sequential):
     def __init__(self, model_name_or_path: str = None, modules: Iterable[nn.Module] = None, device: str = None):
         if modules is not None and not isinstance(modules, OrderedDict):
@@ -372,6 +374,14 @@ class SentenceTransformer(nn.Sequential):
 
         num_train_objectives = len(train_objectives)
 
+        
+        writer = SummaryWriter()
+
+        
+        #writer.add_scalar('Loss/test', np.random.random(), n_iter)
+        #writer.add_scalar('Accuracy/train', np.random.random(), n_iter)
+        #writer.add_scalar('Accuracy/test', np.random.random(), n_iter)
+
         for epoch in trange(epochs, desc="Epoch"):
             training_steps = 0
 
@@ -412,8 +422,12 @@ class SentenceTransformer(nn.Sequential):
                 training_steps += 1
                 global_step += 1
 
-                if evaluation_steps > 0 and training_steps % evaluation_steps == 0:
-                    self._eval_during_training(evaluator, output_path, save_best_model, epoch, training_steps)
+                writer.add_scalar('Loss/train', loss_value.item(), global_step )
+
+                if evaluation_steps > 0 and global_step % evaluation_steps == 0:
+                    score = self._eval_during_training(evaluator, output_path, save_best_model, epoch, training_steps)
+                    writer.add_scalar('Accuracy/dev', score, global_step )
+                    
                     for loss_model in loss_models:
                         loss_model.zero_grad()
                         loss_model.train()
@@ -440,7 +454,8 @@ class SentenceTransformer(nn.Sequential):
             if score > self.best_score and save_best_model:
                 self.save(output_path)
                 self.best_score = score
-
+        
+        return score
 
     def _get_scheduler(self, optimizer, scheduler: str, warmup_steps: int, t_total: int):
         """

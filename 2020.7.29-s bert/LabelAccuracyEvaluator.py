@@ -66,7 +66,7 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
     The results are written in a CSV. If a CSV already exists, then values are appended.
     """
 
-    def __init__(self, dataloader: DataLoader, name: str = "", softmax_model = None):
+    def __init__(self, dataloader: DataLoader, name: str = "", softmax_model = None, label_text = None):
         """
         Constructs an evaluator for the given dataset
 
@@ -78,12 +78,15 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
         self.name = name
         self.softmax_model = softmax_model
         self.softmax_model.to(self.device)
+        self.label_text = label_text
 
         if name:
             name = "_"+name
 
         self.csv_file = "accuracy_evaluation"+name+"_results.csv"
         self.csv_headers = ["epoch", "steps", "accuracy"]
+        self.csv_label_text = "label_and_text" + name + "_results.csv"
+        self.label_text_headers = ["real","prediction","arg_1","arg_2"]
 
     def __call__(self, model, output_path: str = None, epoch: int = -1, steps: int = -1) -> float:
         model.eval()
@@ -100,13 +103,21 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
 
         logging.info("Evaluation on the "+self.name+" dataset"+out_txt)
         self.dataloader.collate_fn = model.smart_batching_collate
+
+        pre_results = torch.tensor([],dtype=torch.int64).to(self.device)
+
         for step, batch in enumerate(tqdm(self.dataloader, desc="Evaluating")):
             features, label_ids = batch_to_device(batch, self.device)
             with torch.no_grad():
                 _, prediction = self.softmax_model(features, labels=None)
 
             total += prediction.size(0)
-            correct += torch.argmax(prediction, dim=1).eq(label_ids).sum().item()
+            pre = torch.argmax(prediction, dim=1)
+            correct += pre.eq(label_ids).sum().item()
+            
+            if self.label_text:
+                pre_results = torch.cat((pre_results,pre), 0 )
+
         accuracy = correct/total
 
         logging.info("Accuracy: {:.4f} ({}/{})\n".format(accuracy, correct, total))
@@ -123,5 +134,18 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
                 with open(csv_path, mode="a", encoding="utf-8") as f:
                     writer = csv.writer(f)
                     writer.writerow([epoch, steps, accuracy])
+
+        if self.label_text :
+            pre_results = pre_results.cpu().numpy().tolist()
+            for i in range(len(self.label_text)):
+                self.label_text[i].insert(1,pre_results[i])
+            
+            if output_path is not None:
+                csv_path = os.path.join(output_path, self.csv_label_text)
+                with open(csv_path, mode="w", encoding="utf-8") as f:
+                    writer = csv.writer(f)
+                    writer.writerow(self.label_text_headers)
+                    for element in self.label_text:
+                        writer.writerow(element)
 
         return accuracy

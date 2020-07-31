@@ -3,6 +3,47 @@ from torch import nn, Tensor
 from typing import Union, Tuple, List, Iterable, Dict
 from ..SentenceTransformer import SentenceTransformer
 import logging
+import torch.nn.functional as F
+
+class LabelSmoothSoftmaxCEV1(nn.Module):
+    '''
+    This is the autograd version, you can also try the LabelSmoothSoftmaxCEV2 that uses derived gradients
+    '''
+
+    def __init__(self, lb_smooth=0.01, reduction='mean', ignore_index=-100):
+        super(LabelSmoothSoftmaxCEV1, self).__init__()
+        self.lb_smooth = lb_smooth
+        self.reduction = reduction
+        self.lb_ignore = ignore_index
+        self.log_softmax = nn.LogSoftmax(dim=1)
+
+    def forward(self, logits, label):
+        '''
+        args: logits: tensor of shape (N, C, H, W)
+        args: label: tensor of shape(N, H, W)
+        '''
+        # overcome ignored label
+        logits = logits.float() # use fp32 to avoid nan
+        with torch.no_grad():
+            num_classes = logits.size(1)
+            label = label.clone().detach()
+            ignore = label.eq(self.lb_ignore)
+            n_valid = ignore.eq(0).sum()
+            label[ignore] = 0
+            lb_pos, lb_neg = 1. - self.lb_smooth, self.lb_smooth / num_classes
+            lb_one_hot = torch.empty_like(logits).fill_(
+                lb_neg).scatter_(1, label.unsqueeze(1), lb_pos).detach()
+
+        logs = self.log_softmax(logits)
+        loss = -torch.sum(logs * lb_one_hot, dim=1)
+        loss[ignore] = 0
+        if self.reduction == 'mean':
+            loss = loss.sum() / n_valid
+        if self.reduction == 'sum':
+            loss = loss.sum()
+
+        return loss
+
 
 class SoftmaxLoss(nn.Module):
     def __init__(self,
@@ -48,6 +89,7 @@ class SoftmaxLoss(nn.Module):
 
         output = self.classifier(features)
         loss_fct = nn.CrossEntropyLoss()
+        #loss_fct = LabelSmoothSoftmaxCEV1()
 
         if labels is not None:
             loss = loss_fct(output, labels.view(-1))

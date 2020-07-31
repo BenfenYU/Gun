@@ -46,7 +46,7 @@ class Self_DataReader:
         self.min_score = min_score
         self.max_score = max_score
 
-    def get_examples(self, filename, max_examples=0):
+    def get_examples(self, filename, max_examples=0,_eval = False):
         """
         filename specified which data split to use (train.csv, dev.csv, test.csv).
         """
@@ -56,12 +56,14 @@ class Self_DataReader:
             next(data)
             examples = []
             warm_num = 0
+            _eval_return = []
+
             for id, row in enumerate(data):
                 #if warm_num == 100:
-                #   break
+                #    break
                 #warm_num += 1
 
-                score = int(row[self.score_col_idx]) - 1 
+                score = int(row[self.score_col_idx]) - 1
                 if self.normalize_scores:  # Normalize to a 0...1 value
                     score = (score - self.min_score) / (self.max_score - self.min_score)
 
@@ -71,6 +73,12 @@ class Self_DataReader:
 
                 if max_examples > 0 and len(examples) >= max_examples:
                     break
+
+                if _eval :
+                    _eval_return.append([score,s1,s2])
+            
+            if _eval :
+                return examples,_eval_return
 
         return examples
 
