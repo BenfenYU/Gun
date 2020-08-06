@@ -77,7 +77,8 @@ class EmbeddingSimilarityEvaluator(SentenceEvaluator):
             labels.extend(label_ids.to("cpu").numpy())
             embeddings1.extend(emb1)
             embeddings2.extend(emb2)
-
+        
+        #cosine_scores = None
         try:
             cosine_scores = 1 - (paired_cosine_distances(embeddings1, embeddings2))
         except Exception as e:

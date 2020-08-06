@@ -8,7 +8,7 @@
             "name": "Python: training_nli.py",
             "type": "python",
             "request": "launch",
-            "program": "train.py",
+            "program": "eval.py",
             "console": "integratedTerminal"
         }
     ]

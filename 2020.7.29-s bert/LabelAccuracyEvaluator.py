@@ -8,6 +8,7 @@ from sentence_transformers.util import batch_to_device
 import os
 import csv
 import torch.nn as nn
+from sklearn import metrics
 
 class Softmax_label(nn.Module):
     def __init__(self,
@@ -106,6 +107,8 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
 
         pre_results = torch.tensor([],dtype=torch.int64).to(self.device)
 
+        prf = torch.tensor([],dtype=torch.int64).to(self.device)
+        labels = torch.tensor([],dtype=torch.int64).to(self.device)
         for step, batch in enumerate(tqdm(self.dataloader, desc="Evaluating")):
             features, label_ids = batch_to_device(batch, self.device)
             with torch.no_grad():
@@ -113,10 +116,25 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
 
             total += prediction.size(0)
             pre = torch.argmax(prediction, dim=1)
+            prf = torch.cat((prf,pre))
+            labels = torch.cat((labels,label_ids))
             correct += pre.eq(label_ids).sum().item()
             
             if self.label_text:
                 pre_results = torch.cat((pre_results,pre), 0 )
+        
+        prf = prf.view(-1)
+        labels = labels.view(-1)
+
+        p = metrics.precision_score(labels.cpu(), prf.cpu(), average=None)
+        r = metrics.recall_score(labels.cpu(), prf.cpu(), average=None)
+        f = metrics.f1_score(labels.cpu(), prf.cpu(), average=None)
+
+        target_names = ['class 0', 'class 1', 'class 2', 'class 3', 'class 4', 'class 5']
+        prf_result = metrics.classification_report(labels.cpu(), prf.cpu(), target_names=target_names)
+
+        print(p,r,f)
+        print(prf_result)
 
         accuracy = correct/total
 

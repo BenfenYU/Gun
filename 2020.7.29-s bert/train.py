@@ -53,6 +53,7 @@ def train_self():
     evaluator = LabelAccuracyEvaluator(dev_dataloader,softmax_model = Softmax_label(model = model,
                                                                                     sentence_embedding_dimension = model.get_sentence_embedding_dimension(),
                                                                                     num_labels = train_num_labels))
+    evaluator = EmbeddingSimilarityEvaluator(dev_dataloader)
 
     # Configure the training
     num_epochs =1 
