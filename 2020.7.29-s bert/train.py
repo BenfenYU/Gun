@@ -53,7 +53,7 @@ def train_self():
     evaluator = LabelAccuracyEvaluator(dev_dataloader,softmax_model = Softmax_label(model = model,
                                                                                     sentence_embedding_dimension = model.get_sentence_embedding_dimension(),
                                                                                     num_labels = train_num_labels))
-    evaluator = EmbeddingSimilarityEvaluator(dev_dataloader)
+
 
     # Configure the training
     num_epochs =1 
@@ -83,7 +83,7 @@ def train_nli():
 
     #You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
     #model_name = sys.argv[1] if len(sys.argv) > 1 else 'bert-base-uncased'
-    model_name = './pretrained_model/bert-base-uncased'
+    model_name = 'bert-base-uncased'
 
     # Read the dataset
     train_batch_size = 6
@@ -119,6 +119,7 @@ def train_nli():
     evaluator = LabelAccuracyEvaluator(dev_dataloader,softmax_model = Softmax_label(model = model,
                                                                                     sentence_embedding_dimension = model.get_sentence_embedding_dimension(),
                                                                                     num_labels = train_num_labels))
+
 
     # Configure the training
     num_epochs = 1

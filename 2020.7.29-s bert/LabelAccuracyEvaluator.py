@@ -115,26 +115,26 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
                 _, prediction = self.softmax_model(features, labels=None)
 
             total += prediction.size(0)
-            pre = torch.argmax(prediction, dim=1)
-            prf = torch.cat((prf,pre))
-            labels = torch.cat((labels,label_ids))
-            correct += pre.eq(label_ids).sum().item()
+            #pre = torch.argmax(prediction, dim=1)
+            #prf = torch.cat((prf,pre))
+            #labels = torch.cat((labels,label_ids))
+            #correct += pre.eq(label_ids).sum().item()
             
             if self.label_text:
                 pre_results = torch.cat((pre_results,pre), 0 )
         
-        prf = prf.view(-1)
-        labels = labels.view(-1)
+        #prf = prf.view(-1)
+        #labels = labels.view(-1)
 
-        p = metrics.precision_score(labels.cpu(), prf.cpu(), average=None)
-        r = metrics.recall_score(labels.cpu(), prf.cpu(), average=None)
-        f = metrics.f1_score(labels.cpu(), prf.cpu(), average=None)
+        #p = metrics.precision_score(labels.cpu(), prf.cpu(), average=None)
+        #r = metrics.recall_score(labels.cpu(), prf.cpu(), average=None)
+        #f = metrics.f1_score(labels.cpu(), prf.cpu(), average=None)
 
-        target_names = ['class 0', 'class 1', 'class 2', 'class 3', 'class 4', 'class 5']
-        prf_result = metrics.classification_report(labels.cpu(), prf.cpu(), target_names=target_names)
+        #target_names = ['class 0', 'class 1', 'class 2', 'class 3', 'class 4', 'class 5']
+        #prf_result = metrics.classification_report(labels.cpu(), prf.cpu(), target_names=target_names)
 
-        print(p,r,f)
-        print(prf_result)
+        #print(p,r,f)
+        #print(prf_result)
 
         accuracy = correct/total
 
