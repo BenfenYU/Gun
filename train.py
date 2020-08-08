@@ -13,9 +13,12 @@ from self_dataset import *
 def train_self():
 
 
-    train_batch_size = 6
+    train_batch_size = 8
     num_epochs = 50
     device = 'cuda:0'
+    train_num_labels = 6
+    evaluation_steps = 1000
+    local = False
 
     #### Just some code to print debug information to stdout
     logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -28,8 +31,8 @@ def train_self():
     model_name = './pretrained_model/bert-base-chinese'
     #train_batch_size = config.train_batch_size
 
-    self_reader = Self_csv_DataReader('./self_dataset')
-    train_num_labels = config.train_num_labels
+    self_reader = Self_csv_DataReader('./self_dataset',local = local)
+    #train_num_labels = config.train_num_labels
     model_save_path = 'output/training_nli_'+model_name.replace("/", "-")+'-'+datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
@@ -53,7 +56,7 @@ def train_self():
 
 
 
-    logging.info("Read STSbenchmark dev dataset")
+    logging.info("Read self dev dataset")
     dev_data = SentencesDataset(examples=self_reader.get_examples('dev.csv'), model=model)
     dev_dataloader = DataLoader(dev_data, shuffle=False, batch_size=train_batch_size)
     evaluator = LabelAccuracyEvaluator(dev_dataloader,softmax_model = Softmax_label(model = model,
@@ -71,7 +74,7 @@ def train_self():
     model.fit(train_objectives=[(train_dataloader, train_loss)],
             evaluator=evaluator,
             epochs=num_epochs,
-            evaluation_steps=1000,
+            evaluation_steps=evaluation_steps,
             warmup_steps=warmup_steps,
             output_path=model_save_path
             )

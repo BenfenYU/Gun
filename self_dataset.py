@@ -35,7 +35,7 @@ class Self_DataReader:
     Default values expects a tab seperated file with the first & second column the sentence pair and third column the score (0...1). Default config normalizes scores from 0...5 to 0...1
     """
     def __init__(self, dataset_folder, s1_col_idx=0, s2_col_idx=1, score_col_idx=2, delimiter="\t",
-                 quoting=csv.QUOTE_NONE, normalize_scores=False, min_score=0, max_score=5):
+                 quoting=csv.QUOTE_NONE, normalize_scores=False, min_score=0, max_score=5,local = False):
         self.dataset_folder = dataset_folder
         self.score_col_idx = score_col_idx
         self.s1_col_idx = s1_col_idx
@@ -45,6 +45,8 @@ class Self_DataReader:
         self.normalize_scores = normalize_scores
         self.min_score = min_score
         self.max_score = max_score
+
+        self.local = local
 
     def get_examples(self, filename, max_examples=0,_eval = False):
         """
@@ -59,9 +61,10 @@ class Self_DataReader:
             _eval_return = []
 
             for id, row in enumerate(data):
-                #if warm_num == 100:
-                #    break
-                #warm_num += 1
+                if self.local:
+                    if warm_num == 10:
+                        break
+                    warm_num += 1
 
                 score = int(row[self.score_col_idx]) - 1
                 if self.normalize_scores:  # Normalize to a 0...1 value
@@ -88,6 +91,6 @@ class Self_csv_DataReader(Self_DataReader):
     Scores are normalized from 0...5 to 0...1
     """
     def __init__(self, dataset_folder, s1_col_idx=3, s2_col_idx=4, score_col_idx=1, delimiter="\t",
-                 quoting=csv.QUOTE_NONE, normalize_scores=False, min_score=0, max_score=5):
+                 quoting=csv.QUOTE_NONE, normalize_scores=False, min_score=0, max_score=5,local = False):
         super().__init__(dataset_folder=dataset_folder, s1_col_idx=s1_col_idx, s2_col_idx=s2_col_idx, score_col_idx=score_col_idx, delimiter="\t",
-                 quoting=quoting, normalize_scores=normalize_scores, min_score=min_score, max_score=max_score)
+                 quoting=quoting, normalize_scores=normalize_scores, min_score=min_score, max_score=max_score,local=local)

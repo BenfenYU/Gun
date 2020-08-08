@@ -121,13 +121,14 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
                 _, prediction = self.softmax_model(features, labels=None)
 
             total += prediction.size(0)
+            correct += torch.argmax(prediction, dim=1).eq(label_ids).sum().item()
             #pre = torch.argmax(prediction, dim=1)
             #prf = torch.cat((prf,pre))
             #labels = torch.cat((labels,label_ids))
             #correct += pre.eq(label_ids).sum().item()
             
-            if self.label_text:
-                pre_results = torch.cat((pre_results,pre), 0 )
+            #if self.label_text:
+            #    pre_results = torch.cat((pre_results,pre), 0 )
         
         #prf = prf.view(-1)
         #labels = labels.view(-1)
@@ -158,7 +159,7 @@ class LabelAccuracyEvaluator(SentenceEvaluator):
                 with open(csv_path, mode="a", encoding="utf-8") as f:
                     writer = csv.writer(f)
                     writer.writerow([epoch, steps, accuracy])
-
+        
         if self.label_text :
             pre_results = pre_results.cpu().numpy().tolist()
             for i in range(len(self.label_text)):
