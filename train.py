@@ -18,7 +18,7 @@ def train_self():
     device = 'cuda:0'
     train_num_labels = 6
     evaluation_steps = 1000
-    local = False
+    local = True
 
     #### Just some code to print debug information to stdout
     logging.basicConfig(format='%(asctime)s - %(message)s',
