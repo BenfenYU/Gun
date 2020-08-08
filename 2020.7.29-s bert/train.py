@@ -24,8 +24,8 @@ def train_self():
                         handlers=[LoggingHandler()])
 
     # model_name = sys.argv[1] if len(sys.argv) > 1 else 'bert-base-uncased'
-    #model_name = 'bert-base-multilingual-uncased'
-    model_name = './pretrained_model/bert-base-chinese'
+    model_name = 'bert-base-chinese'
+    #model_name = './pretrained_model/bert-base-chinese'
     #train_batch_size = config.train_batch_size
 
     self_reader = Self_csv_DataReader('./self_dataset')
