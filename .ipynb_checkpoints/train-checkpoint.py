@@ -15,7 +15,7 @@ def train_self():
 
     train_batch_size = 6
     num_epochs = 50
-    device = 'cuda:5'
+    device = 'cuda:0'
 
     #### Just some code to print debug information to stdout
     logging.basicConfig(format='%(asctime)s - %(message)s',
@@ -24,8 +24,8 @@ def train_self():
                         handlers=[LoggingHandler()])
 
     # model_name = sys.argv[1] if len(sys.argv) > 1 else 'bert-base-uncased'
-    model_name = 'bert-base-chinese'
-    #model_name = './pretrained_model/bert-base-chinese'
+    #model_name = 'bert-base-chinese'
+    model_name = './pretrained_model/bert-base-chinese'
     #train_batch_size = config.train_batch_size
 
     self_reader = Self_csv_DataReader('./self_dataset')
@@ -42,7 +42,7 @@ def train_self():
                                 pooling_mode_cls_token=False,
                                 pooling_mode_max_tokens=False)
 
-    model = SentenceTransformer_NoPooling(modules=[word_embedding_model],device=device)#, pooling_model])
+    model = SentenceTransformer_NoPooling(modules=[word_embedding_model])#, pooling_model])
 
 
     # Convert the dataset to a DataLoader ready for training
@@ -71,7 +71,7 @@ def train_self():
     model.fit(train_objectives=[(train_dataloader, train_loss)],
             evaluator=evaluator,
             epochs=num_epochs,
-            evaluation_steps=100,
+            evaluation_steps=1000,
             warmup_steps=warmup_steps,
             output_path=model_save_path
             )
