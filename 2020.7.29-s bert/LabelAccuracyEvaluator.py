@@ -37,7 +37,13 @@ class Softmax_label(nn.Module):
 
     def forward(self, sentence_features: Iterable[Dict[str, Tensor]], labels: Tensor,\
         concatenation_sent_rep = True,concatenation_sent_difference = True,concatenation_sent_multiplication = False):
-        reps = [self.model(sentence_feature)['sentence_embedding'] for sentence_feature in sentence_features]
+        reps = []
+        for sentence_feature in sentence_features:
+            feature = self.model(sentence_feature)
+            emb = feature['cls_token_embeddings']
+            #emb = feature['sentence_embedding']
+            reps.append(emb)
+        #reps = [self.model(sentence_feature)['sentence_embedding'] for sentence_feature in sentence_features]
         rep_a, rep_b = reps
 
         vectors_concat = []

@@ -27,7 +27,7 @@ class NLIDataReader(object):
         examples = []
         id = 0
         
-        for sentence_a, sentence_b, label in zip(s1, s2, labels):
+        for sentence_a, sentence_b, label in zip(s1[0:10], s2[0:10], labels[0:10]):
             guid = "%s-%d" % (filename, id)
             id += 1
             examples.append(InputExample(guid=guid, texts=[sentence_a, sentence_b], label=self.map_label(label)))

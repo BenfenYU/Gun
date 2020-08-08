@@ -46,6 +46,7 @@ class LabelSmoothSoftmaxCEV1(nn.Module):
 
 
 class SoftmaxLoss(nn.Module):
+    # 线性分类器在这里，而不是在原model中
     def __init__(self,
                  model: SentenceTransformer,
                  sentence_embedding_dimension: int,
@@ -71,7 +72,13 @@ class SoftmaxLoss(nn.Module):
         self.classifier = nn.Linear(num_vectors_concatenated * sentence_embedding_dimension, num_labels)
 
     def forward(self, sentence_features: Iterable[Dict[str, Tensor]], labels: Tensor):
-        reps = [self.model(sentence_feature)['sentence_embedding'] for sentence_feature in sentence_features]
+        reps = []
+        for sentence_feature in sentence_features:
+            feature = self.model(sentence_feature)
+            emb = feature['cls_token_embeddings']
+            #emb = feature['sentence_embedding']
+            reps.append(emb)
+        #reps = [self.model(sentence_feature)['sentence_embedding'] for sentence_feature in sentence_features]
         rep_a, rep_b = reps
 
         vectors_concat = []

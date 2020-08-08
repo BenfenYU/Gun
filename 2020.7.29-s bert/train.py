@@ -11,6 +11,12 @@ import sys, config
 from self_dataset import *
 
 def train_self():
+
+
+    train_batch_size = 6
+    num_epochs = 50
+    device = 'cuda:5'
+
     #### Just some code to print debug information to stdout
     logging.basicConfig(format='%(asctime)s - %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
@@ -20,7 +26,7 @@ def train_self():
     # model_name = sys.argv[1] if len(sys.argv) > 1 else 'bert-base-uncased'
     #model_name = 'bert-base-multilingual-uncased'
     model_name = './pretrained_model/bert-base-chinese'
-    train_batch_size = config.train_batch_size
+    #train_batch_size = config.train_batch_size
 
     self_reader = Self_csv_DataReader('./self_dataset')
     train_num_labels = config.train_num_labels
@@ -36,14 +42,14 @@ def train_self():
                                 pooling_mode_cls_token=False,
                                 pooling_mode_max_tokens=False)
 
-    model = SentenceTransformer(modules=[word_embedding_model, pooling_model])
+    model = SentenceTransformer_NoPooling(modules=[word_embedding_model],device=device)#, pooling_model])
 
 
     # Convert the dataset to a DataLoader ready for training
-    logging.info("Read AllNLI train dataset")
+    logging.info("Read self train dataset")
     train_dataset = SentencesDataset(examples=self_reader.get_examples("train.csv"), model=model)
     train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=train_batch_size)
-    train_loss = losses.SoftmaxLoss(model=model, sentence_embedding_dimension=model.get_sentence_embedding_dimension(), num_labels=train_num_labels)
+    train_loss = losses.SoftmaxLoss(model=model, sentence_embedding_dimension=model.get_word_embedding_dimension(), num_labels=train_num_labels)
 
 
 
@@ -51,12 +57,10 @@ def train_self():
     dev_data = SentencesDataset(examples=self_reader.get_examples('dev.csv'), model=model)
     dev_dataloader = DataLoader(dev_data, shuffle=False, batch_size=train_batch_size)
     evaluator = LabelAccuracyEvaluator(dev_dataloader,softmax_model = Softmax_label(model = model,
-                                                                                    sentence_embedding_dimension = model.get_sentence_embedding_dimension(),
+                                                                                    sentence_embedding_dimension = model.get_word_embedding_dimension(),
                                                                                     num_labels = train_num_labels))
 
 
-    # Configure the training
-    num_epochs =1 
 
     warmup_steps = math.ceil(len(train_dataset) * num_epochs / train_batch_size * 0.1) #10% of train data for warm-up
     logging.info("Warmup-steps: {}".format(warmup_steps))
@@ -83,7 +87,7 @@ def train_nli():
 
     #You can specify any huggingface/transformers pre-trained model here, for example, bert-base-uncased, roberta-base, xlm-roberta-base
     #model_name = sys.argv[1] if len(sys.argv) > 1 else 'bert-base-uncased'
-    model_name = 'bert-base-uncased'
+    model_name = 'pretrained_model/bert-base-uncased'
 
     # Read the dataset
     train_batch_size = 6
@@ -154,4 +158,5 @@ def train_nli():
     model.evaluate(evaluator)
 
 if __name__ == '__main__':
-    train_nli()
+    train_self()
+    #train_nli()
